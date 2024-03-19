@@ -1,12 +1,16 @@
 from datetime import datetime
 import logging
-import os
 
 from dataFetcher import getStockData
 from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
 from graphGenerator import generateGraph
+from timeSeriesFunctions import getTimeSeriesFunction  # Import getTimeSeriesFunction from timeSeriesFunctions.py
 
-#setup logging
+symbol = getStockSymbol()
+
+
+
+# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def parseDate(date_string):
@@ -17,47 +21,54 @@ def parseDate(date_string):
         logging.error("Invalid date format. Please use YYYY-MM-DD.")
         return None
 
-def preprocess_data(api_response, start_date, end_date):
+def preprocess_data(api_response, symbol, timeSeriesFunction, apikey, start_date, end_date):
     """Extract and reformat data from Alpha Vantage API response."""
-    time_series_key = next(key for key in api_response.keys() if "Time Series" in key)
-    raw_data = api_response[time_series_key]
-    
-    #filter data within the specified date range and reformat
+    # This now uses the symbol and apikey variables passed to the function
+    raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+
+    # Filter data within the specified date range and reformat
     data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
-    
     return data
 
 def main():
     apikey = "542MHNFURI47POKH"
     symbol = getStockSymbol()
+    timeSeriesFunction = getTimeSeriesFunction()  # Ask for the time series function
+
+    # Ask for the start date
+    logging.info("Please enter the start date.")
+    startDate = getStartDate()  # Use getStartDate instead of getValidDate
+
+    # Ask for the end date
+    endDate = getEndDate(startDate)
+
+    # Ask for the chart type
     chartType = getChartType()
-    startDateStr = getStartDate()  #YYYY-MM-DD format
-    endDateStr = getEndDate()  #YYYY-MM-DD format
 
-    #validate and parse the user input dates
-    startDate = parseDate(startDateStr)
-    endDate = parseDate(endDateStr)
-    if not startDate or not endDate:
-        logging.error("Invalid date input. Exiting.")
-        return
-
-    #fetch stock data from Alpha Vantage
-    raw_data = getStockData(symbol, apikey)
+    # Fetch stock data from Alpha Vantage
+    raw_data = getStockData(symbol, timeSeriesFunction, apikey)
     if not raw_data:
-        logging.error("Failed to fetch data for symbol: %s", symbol)
+        logging.error(f"Failed to fetch data for symbol: {symbol}")
         return
-    
-    #preprocess the fetched data
-    data = preprocess_data(raw_data, startDateStr, endDateStr)
+
+    # Preprocess the fetched data
+    formattedStartDate = startDate.strftime('%Y-%m-%d')
+    formattedEndDate = endDate.strftime('%Y-%m-%d')
+    data = preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, formattedStartDate, formattedEndDate)
     if not data:
         logging.error("No data available for the selected date range.")
         return
 
-    #generate and display the graph
-    generateGraph(data, chartType, startDateStr, endDateStr)
+    # Generate and display the graph
+    generateGraph(data, chartType, formattedStartDate, formattedEndDate)
+
+
+
 
 if __name__ == "__main__":
     main()
+
+
 
 
 

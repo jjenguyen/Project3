@@ -3,8 +3,9 @@ from pygal.style import Style
 import logging
 import webbrowser
 
-#we need to make sure logging is configured at the application's entry point.
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def preprocess_data(api_response, start_date, end_date):
     """Extract and reformat data from Alpha Vantage API response."""
     time_series_key = next(key for key in api_response.keys() if "Time Series" in key)
