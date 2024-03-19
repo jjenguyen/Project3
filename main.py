@@ -1,54 +1,66 @@
-from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
-# from timeSeriesFunctions import getTimeSeriesFunction
-# from graphGenerator import generateGraph
+from datetime import datetime
+import logging
+import os
+
 from dataFetcher import getStockData
+from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
+from graphGenerator import generateGraph
+
+#setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def parseDate(date_string):
+    """Parse a string into a datetime object."""
+    try:
+        return datetime.strptime(date_string, '%Y-%m-%d')
+    except ValueError:
+        logging.error("Invalid date format. Please use YYYY-MM-DD.")
+        return None
+
+def preprocess_data(api_response, start_date, end_date):
+    """Extract and reformat data from Alpha Vantage API response."""
+    time_series_key = next(key for key in api_response.keys() if "Time Series" in key)
+    raw_data = api_response[time_series_key]
+    
+    #filter data within the specified date range and reformat
+    data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
+    
+    return data
 
 def main():
     apikey = "542MHNFURI47POKH"
-
-    # ask the user to enter the stock symbol
     symbol = getStockSymbol()
+    chartType = getChartType()
+    startDateStr = getStartDate()  #YYYY-MM-DD format
+    endDateStr = getEndDate()  #YYYY-MM-DD format
 
-    # ask the user for the chart type
-    # chartType = getChartType()
+    #validate and parse the user input dates
+    startDate = parseDate(startDateStr)
+    endDate = parseDate(endDateStr)
+    if not startDate or not endDate:
+        logging.error("Invalid date input. Exiting.")
+        return
 
-    # ask the user for the time series function
-    # function = getTimeSeriesFunction()
-    # # temporary to check if function is in correct api request format for url
-    # print("Selected function:", function)
-
-    # ask the user for start date (yyyy-mm-dd)
-    startDate = getStartDate()
-
-    # ask the user for end date (yyyy-mm-dd)
-    endDate = getEndDate()
-
-    # validate the user input dates
-    # note: end date cannot be before start date
-    try:
-        # startDate =
-        # endDate =
-        if endDate < startDate:
-            raise ValueError("Error: end date cannot be before start date. Please enter the dates again.")
-    except ValueError as e:
-        print("Error:", e)
+    #fetch stock data from Alpha Vantage
+    raw_data = getStockData(symbol, apikey)
+    if not raw_data:
+        logging.error("Failed to fetch data for symbol: %s", symbol)
         return
     
-    # call function to get stock data
-    # change to (symbol, function, startDate, endDate, apikey) once timeSeries is implemented
-    data = getStockData(symbol, startDate, endDate, apikey)
+    #preprocess the fetched data
+    data = preprocess_data(raw_data, startDateStr, endDateStr)
+    if not data:
+        logging.error("No data available for the selected date range.")
+        return
 
-    if data:
-        # generateGraph(data, chartType)
-
-        # printing data to see if api is properly hooked up and can fetch stock data
-        print(data)
-    else:
-        print("Error: no data returned.")
+    #generate and display the graph
+    generateGraph(data, chartType, startDateStr, endDateStr)
 
 if __name__ == "__main__":
-    # this will only execute if this script is run directly, not when it's imported as a module into another script
     main()
+
+
+
 
 # # tested to see if api properly hooked up to app: successful
 # import requests

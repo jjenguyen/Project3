@@ -1,22 +1,23 @@
 import requests
+import logging
 
-def getStockData(symbol, startDate, endDate, apikey):
-    # change to (symbol, function, startDate, endDate, apikey) once getTimeSeries() is implemented
-    # fetch stock data from Alpha Vantage API
-    # temporary function = "TIME_SERIES_WEEKLY_ADJUSTED" for testing purposes, will change to {function} once getTimeSeries() is implemented
+def getStockData(symbol, apikey):
     url = f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={symbol}&apikey={apikey}"
-
-    print("API URL Created:", url)
+    logging.info("Fetching stock data for: %s", symbol)
 
     try:
-        # making the api request
         response = requests.get(url)
-        # raise an exception for any HTTP errors
         response.raise_for_status()
-
-        # parse json response
         data = response.json()
-        return data
+        if "Time Series (Weekly Adjusted)" not in data:
+            raise ValueError("Unexpected data format received from API.")
+        return data["Time Series (Weekly Adjusted)"]
+    except requests.RequestException as e:
+        logging.error("HTTP Request error for %s: %s", symbol, e)
+        raise e  #propagates the exception to the caller
+    except ValueError as e:
+        logging.error("Data Processing error for %s: %s", symbol, e)
+        raise e  #propagates the exception to the caller
     except Exception as e:
-        print("Error:", e)
-        return None
+        logging.error("An unexpected error occurred: %s", e)
+        raise e  #propagates the exception to the caller
