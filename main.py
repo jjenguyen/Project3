@@ -1,10 +1,9 @@
 from datetime import datetime
 import logging
-
 from dataFetcher import getStockData
 from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
 from graphGenerator import generateGraph
-from timeSeriesFunctions import getTimeSeriesFunction  # Import getTimeSeriesFunction from timeSeriesFunctions.py
+from timeSeriesFunctions import getTimeSeriesFunction
 
 # symbol = getStockSymbol()
 
@@ -39,7 +38,7 @@ def main():
     symbol = getStockSymbol()
 
     # Ask for the time series function
-    timeSeriesFunction = getTimeSeriesFunction()
+    timeSeriesFunction = getTimeSeriesFunction(symbol)
 
     # Ask for the start date
     # this is already built-into getStartDate()

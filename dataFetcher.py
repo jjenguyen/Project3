@@ -2,9 +2,15 @@ import requests
 import logging
 
 def getStockData(symbol, timeSeriesFunction, apikey):
-    url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}"
-    logging.info(f"Fetching stock data for: {symbol} using function: {timeSeriesFunction}")
+    if "TIME_SERIES_INTRADAY" in timeSeriesFunction:
+        # symbol is already included from timeSeriesFunctions.py so we do not need it again here
+        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&apikey={apikey}"
+    else:
+        # url format for all other time series functions
+        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}"
 
+    # temporary for error checking
+    logging.info(f"Fetching stock data for: {symbol} using function: {timeSeriesFunction}")
     print("URL created:", url)
 
     try:
