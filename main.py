@@ -32,8 +32,14 @@ def preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, start_date, en
 
 def main():
     apikey = "542MHNFURI47POKH"
+
+    print("Stock Data Visualizer")
+    print("---------------------")
+
     symbol = getStockSymbol()
-    timeSeriesFunction = getTimeSeriesFunction()  # Ask for the time series function
+
+    # Ask for the time series function
+    timeSeriesFunction = getTimeSeriesFunction()
 
     # Ask for the start date
     # this is already built-into getStartDate()

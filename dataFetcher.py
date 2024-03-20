@@ -12,9 +12,14 @@ def getStockData(symbol, timeSeriesFunction, apikey):
         response.raise_for_status()
         data = response.json()
 
+        # temporary for error checking
+        logging.error("API Response Content: %s", response.content)
+
         # Check if the API response contains the expected data key
         data_key = None
         for key in data:
+            # temporary for error checking
+            print("Key in data:", key)
             if "Time Series" in key:
                 data_key = key
                 break

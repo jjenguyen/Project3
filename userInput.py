@@ -5,14 +5,15 @@ class UserCancelledOperation(Exception):
     """Exception raised when a user cancels an input operation."""
 
 def getChartType():
-    print("\nSelect the chart type you'd like to visualize the stock data with:")
+    print("\nChart Types:")
+    print("---------------")
     print("1. Line Chart ")
     print("2. Bar Chart ")
-    chart_type_input = input("\nEnter your choice (1 for Line Chart, 2 for Bar Chart): ")
+    chart_type_input = input("\nEnter the chart type you want (1, 2): ")
 
     while chart_type_input not in ['1', '2']:
-        print("Invalid selection. Please choose 1 for Line Chart or 2 for Bar Chart.")
-        chart_type_input = input("Enter your choice (1 for Line Chart, 2 for Bar Chart): ")
+        print("\nError: Invalid selection. Please choose 1 for Line Chart or 2 for Bar Chart.")
+        chart_type_input = input("\nEnter your choice (1 for Line Chart, 2 for Bar Chart): ")
     
     return 'line' if chart_type_input == '1' else 'bar'
 
@@ -21,7 +22,7 @@ def parseDate(date_string):
     try:
         return datetime.strptime(date_string, '%Y-%m-%d')
     except ValueError:
-        logging.error("Invalid date format. Please use YYYY-MM-DD.")
+        print("\nError: Invalid date format. Please use YYYY-MM-DD.")
         return None
 
 def getValidDate(prompt):
@@ -42,19 +43,19 @@ def getStartDate():
     return getValidDate("\nEnter the start date (YYYY-MM-DD): ")
 
 def getEndDate(startDate):
-    #prompt user for a valid end date, ensuring it's not before the start date."""
+    #prompt user for a valid end date, ensuring it's not before the start date.
     endDate = getValidDate("Enter the end date (YYYY-MM-DD): ")
     while endDate < startDate:
-        logging.info("End date cannot be before the start date. Please enter a valid end date.")
-        endDate = getValidDate("Enter the end date (YYYY-MM-DD): ")
+        print("\nError: End date cannot be before the start date. Please enter a valid end date.")
+        endDate = getValidDate("\nEnter the end date (YYYY-MM-DD): ")
     return endDate
 
 def getStockSymbol():
     while True:
-        symbol = input("Enter the stock symbol for the company you want data for: ").strip().upper()
+        symbol = input("\nEnter the stock symbol you are looking for: ").strip().upper()
         # Check if the symbol meets the criteria
         if not symbol.isalpha() or len(symbol) > 5:
-            print("Invalid stock symbol. Please enter a valid symbol consisting of up to 5 uppercase alphabetic characters.")
+            print("\nError: Invalid stock symbol. Please enter a valid symbol consisting of up to 5 uppercase alphabetic characters.")
         else:
             return symbol
 
