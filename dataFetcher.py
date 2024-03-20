@@ -5,6 +5,8 @@ def getStockData(symbol, timeSeriesFunction, apikey):
     url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}"
     logging.info(f"Fetching stock data for: {symbol} using function: {timeSeriesFunction}")
 
+    print("URL created:", url)
+
     try:
         response = requests.get(url)
         response.raise_for_status()

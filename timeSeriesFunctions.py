@@ -1,5 +1,5 @@
 def getTimeSeriesFunction():
-    print("Select the time series function you want the API to use:")
+    print("\nSelect the time series function you want the API to use:")
     print("1. Intraday")
     print("2. Daily")
     print("3. Weekly")

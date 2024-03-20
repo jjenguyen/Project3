@@ -41,7 +41,10 @@ def generateGraph(data, chartType, startDate, endDate):
         
         #prepare data
         dates = sorted(list(data.keys()))
-        values = [data[date]['4. close'] for date in dates if date >= startDate and date <= endDate]
+        # values = [data[date]['4. close'] for date in dates if date >= startDate and date <= endDate]
+        # ERROR - An unexpected error occurred while generating or displaying the chart: 'float' object is not subscriptable
+        # error fixed after modifying:
+        values = [data[date] for date in dates if date >= startDate and date <= endDate]
 
         #check for empty data
         if not dates or not values:

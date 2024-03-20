@@ -6,9 +6,7 @@ from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
 from graphGenerator import generateGraph
 from timeSeriesFunctions import getTimeSeriesFunction  # Import getTimeSeriesFunction from timeSeriesFunctions.py
 
-symbol = getStockSymbol()
-
-
+# symbol = getStockSymbol()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,10 +19,12 @@ def parseDate(date_string):
         logging.error("Invalid date format. Please use YYYY-MM-DD.")
         return None
 
-def preprocess_data(api_response, symbol, timeSeriesFunction, apikey, start_date, end_date):
+def preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, start_date, end_date):
     """Extract and reformat data from Alpha Vantage API response."""
     # This now uses the symbol and apikey variables passed to the function
-    raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+
+    # getStockData() is called twice in main, leading to double instance
+    # raw_data = getStockData(symbol, timeSeriesFunction, apikey)
 
     # Filter data within the specified date range and reformat
     data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
@@ -36,7 +36,8 @@ def main():
     timeSeriesFunction = getTimeSeriesFunction()  # Ask for the time series function
 
     # Ask for the start date
-    logging.info("Please enter the start date.")
+    # this is already built-into getStartDate()
+    # logging.info("Please enter the start date.")
     startDate = getStartDate()  # Use getStartDate instead of getValidDate
 
     # Ask for the end date
@@ -62,12 +63,8 @@ def main():
     # Generate and display the graph
     generateGraph(data, chartType, formattedStartDate, formattedEndDate)
 
-
-
-
 if __name__ == "__main__":
     main()
-
 
 
 

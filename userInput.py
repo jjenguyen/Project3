@@ -5,10 +5,10 @@ class UserCancelledOperation(Exception):
     """Exception raised when a user cancels an input operation."""
 
 def getChartType():
-    print("Select the chart type you'd like to visualize the stock data with:")
+    print("\nSelect the chart type you'd like to visualize the stock data with:")
     print("1. Line Chart ")
     print("2. Bar Chart ")
-    chart_type_input = input("Enter your choice (1 for Line Chart, 2 for Bar Chart): ")
+    chart_type_input = input("\nEnter your choice (1 for Line Chart, 2 for Bar Chart): ")
 
     while chart_type_input not in ['1', '2']:
         print("Invalid selection. Please choose 1 for Line Chart or 2 for Bar Chart.")
@@ -38,8 +38,8 @@ def getValidDate(prompt):
 
 def getStartDate():
     #prompt user for a valid start date.
-    logging.info("Please enter the start date.")
-    return getValidDate("Enter the start date (YYYY-MM-DD): ")
+    # logging.info("Please enter the start date.")
+    return getValidDate("\nEnter the start date (YYYY-MM-DD): ")
 
 def getEndDate(startDate):
     #prompt user for a valid end date, ensuring it's not before the start date."""
