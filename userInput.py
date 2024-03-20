@@ -7,15 +7,15 @@ class UserCancelledOperation(Exception):
 def getChartType():
     print("\nChart Types:")
     print("---------------")
-    print("1. Line Chart ")
-    print("2. Bar Chart ")
+    print("1. Bar")
+    print("2. Line")
     chart_type_input = input("\nEnter the chart type you want (1, 2): ")
 
     while chart_type_input not in ['1', '2']:
-        print("\nError: Invalid selection. Please choose 1 for Line Chart or 2 for Bar Chart.")
-        chart_type_input = input("\nEnter your choice (1 for Line Chart, 2 for Bar Chart): ")
+        print("\nError: Invalid selection. Please choose 1 for Bar or 2 for Line.")
+        chart_type_input = input("\nEnter your choice (1, 2): ")
     
-    return 'line' if chart_type_input == '1' else 'bar'
+    return 'bar' if chart_type_input == '1' else 'line'
 
 def parseDate(date_string):
     #arse a string into a datetime object
@@ -34,7 +34,7 @@ def getValidDate(prompt):
             if date:
                 return date
         except KeyboardInterrupt:
-            logging.warning("User cancelled operation.")
+            logging.warning("\nUser cancelled operation.")
             raise UserCancelledOperation()
 
 def getStartDate():
