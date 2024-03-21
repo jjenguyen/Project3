@@ -10,8 +10,20 @@ def preprocess_data(api_response, start_date, end_date):
     raw_data = api_response[time_series_key]
     
     #filter data within the specified date range and reformat
-    data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
-    
+    data = {}
+    for date, details in raw_data.items():
+        if start_date <= date <= end_date:
+            data[date] = {
+                "open": float(details["1. open"]),
+                "high": float(details["2. high"]),
+                "low": float(details["3. low"]),
+                "close": float(details["4. close"])
+            }
+    # data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
+
+    for date, details in data.items():
+            logging.info(f"{date}: {details}")
+
     return data
 
 #Function get it to open directly in the browser
@@ -50,19 +62,35 @@ def generateGraph(data, chartType, startDate, endDate):
         
         #prepare data
         dates = sorted(list(data.keys()))
+
+        logging.info(f"Dates: {dates}")
+        logging.info("Data details:")
+        for date, details in data.items():
+            logging.info(f"{date}: {details}")
+
+        opens = [float(details["open"]) for date, details in data.items() if date >= startDate and date <= endDate]
+        highs = [float(details["high"]) for date, details in data.items() if date >= startDate and date <= endDate]
+        lows = [float(details["low"]) for date, details in data.items() if date >= startDate and date <= endDate]
+        closes = [float(details["close"]) for date, details in data.items() if date >= startDate and date <= endDate]
         # values = [data[date]['4. close'] for date in dates if date >= startDate and date <= endDate]
         # ERROR - An unexpected error occurred while generating or displaying the chart: 'float' object is not subscriptable
         # error fixed after modifying:
-        values = [data[date] for date in dates if date >= startDate and date <= endDate]
+        # values = [data[date] for date in dates if date >= startDate and date <= endDate]
+
+        logging.info(f"Opens: {opens}")
 
         #check for empty data
-        if not dates or not values:
+        if not dates or not opens or not highs or not lows or not closes:
             logging.error("No data available for the given date range.")
             return
         
         #set chart data
         chart.x_labels = dates
-        chart.add("Stock Price", values)
+        # chart.add("Stock Price", values)
+        chart.add("Open", opens)
+        chart.add("High", highs)
+        chart.add("Low", lows)
+        chart.add("Close", closes)
         
         #render chart to file and open it
         svg_file_path = 'chart.svg'
