@@ -5,8 +5,6 @@ from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
 from graphGenerator import generateGraph
 from timeSeriesFunctions import getTimeSeriesFunction
 
-# symbol = getStockSymbol()
-
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -35,45 +33,49 @@ def main():
     print("Stock Data Visualizer")
     print("---------------------")
 
-    symbol = getStockSymbol()
+    # Loop until user chooses to exit
+    while True:
+        # Get stock symbol
+        symbol = getStockSymbol()
 
-    # Ask for the time series function
-    timeSeriesFunction = getTimeSeriesFunction(symbol)
+        # Get chart type
+        chartType = getChartType()
 
-    # Ask for the start date
-    # this is already built-into getStartDate()
-    # logging.info("Please enter the start date.")
-    startDate = getStartDate()  # Use getStartDate instead of getValidDate
+        # Get time series function
+        timeSeriesFunction = getTimeSeriesFunction(symbol)
 
-    # Ask for the end date
-    endDate = getEndDate(startDate)
+        # Get start date
+        # this is already built-into getStartDate()
+        # logging.info("Please enter the start date.")
+        startDate = getStartDate()  # Use getStartDate instead of getValidDate
 
-    # Ask for the chart type
-    chartType = getChartType()
+        # Get end date
+        endDate = getEndDate(startDate)
 
-    # Fetch stock data from Alpha Vantage
-    raw_data = getStockData(symbol, timeSeriesFunction, apikey)
-    if not raw_data:
-        logging.error(f"Failed to fetch data for symbol: {symbol}")
-        return
+        # Fetch stock data from Alpha Vantage
+        raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+        if not raw_data:
+            logging.error(f"Failed to fetch data for symbol: {symbol}")
+            return
 
-    # Preprocess the fetched data
-    formattedStartDate = startDate.strftime('%Y-%m-%d')
-    formattedEndDate = endDate.strftime('%Y-%m-%d')
-    data = preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, formattedStartDate, formattedEndDate)
-    if not data:
-        logging.error("No data available for the selected date range.")
-        return
+        # Preprocess the fetched data
+        formattedStartDate = startDate.strftime('%Y-%m-%d')
+        formattedEndDate = endDate.strftime('%Y-%m-%d')
+        data = preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, formattedStartDate, formattedEndDate)
+        if not data:
+            logging.error("No data available for the selected date range.")
+            return
 
-    # Generate and display the graph
-    generateGraph(data, chartType, formattedStartDate, formattedEndDate)
+        # Generate and display the graph
+        generateGraph(data, chartType, formattedStartDate, formattedEndDate)
+
+        # Ask user to continue or exit
+        choice = input("\nWould you like to view more stock data? (y/n): ").strip().lower()
+        if choice != "y":
+            break
 
 if __name__ == "__main__":
     main()
-
-
-
-
 
 # # tested to see if api properly hooked up to app: successful
 # import requests
