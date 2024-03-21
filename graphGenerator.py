@@ -2,6 +2,9 @@ import pygal
 from pygal.style import Style
 import logging
 import webbrowser
+import platform
+
+
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,6 +18,17 @@ def preprocess_data(api_response, start_date, end_date):
     data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
     
     return data
+
+
+def get_default_browser():
+    """Get the default browser command based on platform."""
+    system = platform.system()
+    if system == "Windows":
+        return "start"
+    elif system == "Darwin":  # macOS
+        return "open"
+    else:  # Linux, Unix, etc.
+        return "xdg-open"
 
 def generateGraph(data, chartType, startDate, endDate):
     #customizing the chart style
@@ -58,8 +72,26 @@ def generateGraph(data, chartType, startDate, endDate):
         #render chart to file and open it
         svg_file_path = 'chart.svg'
         chart.render_to_file(svg_file_path)
-        webbrowser.open(svg_file_path)
+        #webbrowser.open(svg_file_path)
+        #logging.info("Chart generated and displayed successfully.")
+         # Get the default browser command based on platform
+    
+        default_browser_cmd = get_default_browser()
+        # Open the SVG file with the default browser
+        command = f"{default_browser_cmd} {svg_file_path}"
+        
+        # Execute the command
+        import subprocess
+        subprocess.Popen(command, shell=True)
+        
         logging.info("Chart generated and displayed successfully.")
+    
+       
+       
+       
+        #webbrowser.open(svg_file_path, new=2)
+        #logging.info("Chart generated and displayed successfully.")
+        
     
     except IOError as e:
         logging.error(f"Failed to save the chart to {svg_file_path}: {e}")
