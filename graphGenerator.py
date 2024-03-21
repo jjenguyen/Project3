@@ -1,12 +1,7 @@
 import pygal
 from pygal.style import Style
 import logging
-import webbrowser
 import platform
-
-
-
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def preprocess_data(api_response, start_date, end_date):
@@ -19,7 +14,7 @@ def preprocess_data(api_response, start_date, end_date):
     
     return data
 
-
+#Function get it to open directly in the browser
 def get_default_browser():
     """Get the default browser command based on platform."""
     system = platform.system()
@@ -85,14 +80,8 @@ def generateGraph(data, chartType, startDate, endDate):
         subprocess.Popen(command, shell=True)
         
         logging.info("Chart generated and displayed successfully.")
-    
-       
-       
-       
-        #webbrowser.open(svg_file_path, new=2)
-        #logging.info("Chart generated and displayed successfully.")
+
         
-    
     except IOError as e:
         logging.error(f"Failed to save the chart to {svg_file_path}: {e}")
     except Exception as e:
