@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import requests
 
 class UserCancelledOperation(Exception):
     """Exception raised when a user cancels an input operation."""
@@ -53,10 +54,21 @@ def getEndDate(startDate):
 def getStockSymbol():
     while True:
         symbol = input("\nEnter the stock symbol you are looking for: ").strip().upper()
-        # Check if the symbol meets the criteria
+        # Check if the symbol is 5 characters
         if not symbol.isalpha() or len(symbol) > 5:
             print("\nError: Invalid stock symbol. Please enter a valid symbol consisting of up to 5 uppercase alphabetic characters.")
         else:
-            return symbol
+            
+            apikey = "574R6DZXDBWETSKK"
+            url = f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={symbol}&apikey={apikey}"
 
+            response = requests.get(url)
+            data = response.json()
 
+            # checks to see if symbol exists in api data
+            if "bestMatches" in data:
+                matches = [entry["1. symbol"] for entry in data["bestMatches"]]
+                if symbol in matches:
+                    return symbol
+                else:
+                    print(f"\nError: No matching stock symbol found for '{symbol}'. Please try again or enter a different symbol.")
