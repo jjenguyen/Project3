@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-from dataFetcher import getStockData
+from modified_dataFetcher import getStockData  # Ensure this matches the new filename if changed
 from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
 from graphGenerator import generateGraph
 from timeSeriesFunctions import getTimeSeriesFunction
@@ -8,74 +8,38 @@ from timeSeriesFunctions import getTimeSeriesFunction
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def parseDate(date_string):
-    """Parse a string into a datetime object."""
-    try:
-        return datetime.strptime(date_string, '%Y-%m-%d')
-    except ValueError:
-        logging.error("Invalid date format. Please use YYYY-MM-DD.")
-        return None
-
-def preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, start_date, end_date):
-    """Extract and reformat data from Alpha Vantage API response."""
-    # This now uses the symbol and apikey variables passed to the function
-
-    # getStockData() is called twice in main, leading to double instance
-    # raw_data = getStockData(symbol, timeSeriesFunction, apikey)
-
-    # Filter data within the specified date range and reformat
-    data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
-    return data
-
 def main():
-    apikey = "574R6DZXDBWETSKK"
-
     print("Stock Data Visualizer")
     print("---------------------")
 
     # Loop until user chooses to exit
     while True:
-        # Get stock symbol
         symbol = getStockSymbol()
-
-        # Get chart type
         chartType = getChartType()
-
-        # Get time series function
         timeSeriesFunction = getTimeSeriesFunction(symbol)
-
-        # Get start date
-        # this is already built-into getStartDate()
-        # logging.info("Please enter the start date.")
-        startDate = getStartDate()  # Use getStartDate instead of getValidDate
-
-        # Get end date
+        startDate = getStartDate()
         endDate = getEndDate(startDate)
 
-        # Fetch stock data from Alpha Vantage
-        raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+        # Adjusted to reflect local JSON data usage
+        raw_data = getStockData(symbol, timeSeriesFunction, None)  # API key is not required for local data
+
         if not raw_data:
             logging.error(f"Failed to fetch data for symbol: {symbol}")
             return
 
-        # Preprocess the fetched data
+        # Process and visualize the data
         formattedStartDate = startDate.strftime('%Y-%m-%d')
         formattedEndDate = endDate.strftime('%Y-%m-%d')
-        data = preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, formattedStartDate, formattedEndDate)
-        if not data:
-            logging.error("No data available for the selected date range.")
-            return
+        generateGraph(raw_data, chartType, formattedStartDate, formattedEndDate)
 
-        # Generate and display the graph
-        generateGraph(data, chartType, formattedStartDate, formattedEndDate)
-
-        # Ask user to continue or exit
+        # User decision to continue or exit
         choice = input("\nWould you like to view more stock data? (y/n): ").strip().lower()
         if choice != "y":
             break
 
 if __name__ == "__main__":
     main()
+
 
 # # tested to see if api properly hooked up to app: successful
 # import requests
