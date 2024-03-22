@@ -72,3 +72,5 @@ def getStockSymbol():
                     return symbol
                 else:
                     print(f"\nError: No matching stock symbol found for '{symbol}'. Please try again or enter a different symbol.")
+            # temporary for error checking (e.g. 25 daily max requests reached)
+            logging.error("API Response Content: %s", response.content)
