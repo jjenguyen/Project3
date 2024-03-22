@@ -1,52 +1,51 @@
-from datetime import datetime
+import json
 import logging
-from modified_dataFetcher import getStockData  # Ensure this matches the new filename if changed
-from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
-from graphGenerator import generateGraph
-from timeSeriesFunctions import getTimeSeriesFunction
+from datetime import datetime
+from graphGenerator import generate_graph
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def main():
-    print("Stock Data Visualizer")
-    print("---------------------")
+def read_json_file(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    return data
 
-    # Loop until user chooses to exit
+def get_date_input(prompt):
     while True:
-        symbol = getStockSymbol()
-        chartType = getChartType()
-        timeSeriesFunction = getTimeSeriesFunction(symbol)
-        startDate = getStartDate()
-        endDate = getEndDate(startDate)
+        date_str = input(prompt)
+        try:
+            datetime.strptime(date_str, '%Y-%m-%d')
+            return date_str
+        except ValueError:
+            print("This is the incorrect date string format. It should be YYYY-MM-DD")
 
-        # Adjusted to reflect local JSON data usage
-        raw_data = getStockData(symbol, timeSeriesFunction, None)  # API key is not required for local data
-
-        if not raw_data:
-            logging.error(f"Failed to fetch data for symbol: {symbol}")
-            return
-
-        # Process and visualize the data
-        formattedStartDate = startDate.strftime('%Y-%m-%d')
-        formattedEndDate = endDate.strftime('%Y-%m-%d')
-        generateGraph(raw_data, chartType, formattedStartDate, formattedEndDate)
-
-        # User decision to continue or exit
-        choice = input("\nWould you like to view more stock data? (y/n): ").strip().lower()
-        if choice != "y":
-            break
+def main():
+    logging.info("Welcome to the Stock Data Visualization Tool.")
+    
+    json_file = 'alphavantage.json'
+    stock_data = read_json_file(json_file)
+    
+    chart_type = input("Enter chart type (line/bar): ").strip().lower()
+    while chart_type not in ['line', 'bar']:
+        print("Invalid chart type. Please enter 'line' or 'bar'.")
+        chart_type = input("Enter chart type (line/bar): ").strip().lower()
+    
+    start_date = get_date_input("Enter start date (YYYY-MM-DD): ")
+    end_date = get_date_input("Enter end date (YYYY-MM-DD): ")
+    
+    
+    generate_graph(stock_data, chart_type, start_date, end_date)
 
 if __name__ == "__main__":
     main()
 
 
 # # tested to see if api properly hooked up to app: successful
-# import requests
+# # import requests
 
 # def fetch_stock_data(url):
 #     try:
-#         response = requests.get(url)
+# #         response = requests.get(url)
 #         if response.status_code == 200:
 #             data = response.json()
 #             return data

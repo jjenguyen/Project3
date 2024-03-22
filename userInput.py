@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-import requests
+# import requests
 
 class UserCancelledOperation(Exception):
     """Exception raised when a user cancels an input operation."""
@@ -66,6 +66,8 @@ def loadJsonData():
         return json.load(file)
 
 def main():
+    with open('alphavantage.json', 'r') as file:
+        data = json.load(file)
     try:
         print("Stock Data Visualizer")
         print("---------------------")
