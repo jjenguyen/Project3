@@ -28,7 +28,7 @@ def preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, start_date, en
     return data
 
 def main():
-    apikey = "574R6DZXDBWETSKK"
+    apikey = "V6BVQP0SPVJAVA6X"
 
     print("Stock Data Visualizer")
     print("---------------------")
