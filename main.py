@@ -1,44 +1,56 @@
-import json
-import logging
 from datetime import datetime
-from graphGenerator import generate_graph
+import logging
+from dataFetcher import getStockData  # Ensure this matches the actual function name
+from userInput import getStockSymbol, getChartType, getStartDate, getEndDate
+from graphGenerator import generate_graph  # Ensure this matches the actual function name
+from timeSeriesFunctions import getTimeSeriesFunction  # Adjust if needed
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def read_json_file(filename):
-    with open(filename, 'r') as file:
-        data = json.load(file)
-    return data
-
-def get_date_input(prompt):
-    while True:
-        date_str = input(prompt)
-        try:
-            datetime.strptime(date_str, '%Y-%m-%d')
-            return date_str
-        except ValueError:
-            print("This is the incorrect date string format. It should be YYYY-MM-DD")
+def preprocess_data(raw_data, start_date, end_date):
+    filtered_data = {}
+    for date_str, details in raw_data.items():
+        date = datetime.strptime(date_str, '%Y-%m-%d')
+        if start_date <= date <= end_date:
+            filtered_data[date_str] = details['4. close']
+    return filtered_data
 
 def main():
-    logging.info("Welcome to the Stock Data Visualization Tool.")
-    
-    json_file = 'alphavantage.json'
-    stock_data = read_json_file(json_file)
-    
-    chart_type = input("Enter chart type (line/bar): ").strip().lower()
-    while chart_type not in ['line', 'bar']:
-        print("Invalid chart type. Please enter 'line' or 'bar'.")
-        chart_type = input("Enter chart type (line/bar): ").strip().lower()
-    
-    start_date = get_date_input("Enter start date (YYYY-MM-DD): ")
-    end_date = get_date_input("Enter end date (YYYY-MM-DD): ")
-    
-    
-    generate_graph(stock_data, chart_type, start_date, end_date)
+    apikey = "574R6DZXDBWETSKK"  # Use your actual API key here
+
+    print("Stock Data Visualizer")
+
+    while True:
+        symbol = getStockSymbol()
+        chartType = getChartType()
+
+        # If getTimeSeriesFunction requires 'symbol', ensure it's passed correctly
+        # Otherwise, adjust getTimeSeriesFunction not to require 'symbol' if not needed
+        timeSeriesFunction = getTimeSeriesFunction(symbol)
+
+        startDateStr = getStartDate()  # Fetch the start date string
+        endDateStr = getEndDate(startDateStr)  # Fetch the end date string, ensuring logic for comparison
+
+        # Fetch stock data from Alpha Vantage
+        metadata, raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+        if not raw_data:
+            logging.error(f"Failed to fetch data for symbol: {symbol}")
+            continue  # Allows user to retry instead of ending the script
+
+        # Preprocess the fetched data based on the user-specified date range
+        data = preprocess_data(raw_data, startDateStr, endDateStr)
+        if not data:
+            logging.error("No data available for the selected date range.")
+            continue
+
+        # Generate and display the graph based on the preprocessed data
+        generate_graph(data, chartType, startDateStr, endDateStr)
+
+        if input("\nWould you like to view more stock data? (y/n): ").lower() != 'y':
+            break
 
 if __name__ == "__main__":
     main()
-
 
 # # tested to see if api properly hooked up to app: successful
 # # import requests

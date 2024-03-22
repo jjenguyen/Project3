@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-# import requests
+import requests
 
 class UserCancelledOperation(Exception):
     """Exception raised when a user cancels an input operation."""
@@ -54,40 +54,21 @@ def getEndDate(startDate):
 def getStockSymbol():
     while True:
         symbol = input("\nEnter the stock symbol you are looking for: ").strip().upper()
-        # Simple check for symbol length and characters without API call
+        # Check if the symbol is 5 characters
         if not symbol.isalpha() or len(symbol) > 5:
             print("\nError: Invalid stock symbol. Please enter a valid symbol consisting of up to 5 uppercase alphabetic characters.")
         else:
-            return symbol
+            
+            apikey = "574R6DZXDBWETSKK"
+            url = f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={symbol}&apikey={apikey}"
 
-def loadJsonData():
-    """Load data from the local JSON file."""
-    with open('alphavantage.json', 'r') as file:
-        return json.load(file)
+            response = requests.get(url)
+            data = response.json()
 
-def main():
-    with open('alphavantage.json', 'r') as file:
-        data = json.load(file)
-    try:
-        print("Stock Data Visualizer")
-        print("---------------------")
-        symbol = getStockSymbol()
-        chartType = getChartType()
-        startDate = getStartDate()
-        endDate = getEndDate(startDate)
-
-        # Load data from JSON and select relevant data based on symbol, start, and end dates
-        all_data = loadJsonData()
-        # Example: Modify to navigate your specific JSON structure and filter based on dates
-        # This is a placeholder step; actual implementation depends on your JSON structure
-        relevant_data = all_data['Weekly Time Series']  # Adjust this according to your JSON structure
-
-        # Generate and display the graph using the selected data
-        # You'll need to adjust how you pass data to this function based on your graph generation logic
-        generateGraph(relevant_data, chartType, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
-
-    except UserCancelledOperation:
-        print("Operation cancelled by the user.")
-
-if __name__ == "__main__":
-    main()
+            # checks to see if symbol exists in api data
+            if "bestMatches" in data:
+                matches = [entry["1. symbol"] for entry in data["bestMatches"]]
+                if symbol in matches:
+                    return symbol
+                else:
+                    print(f"\nError: No matching stock symbol found for '{symbol}'. Please try again or enter a different symbol.")

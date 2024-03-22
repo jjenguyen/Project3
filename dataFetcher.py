@@ -1,29 +1,28 @@
-import json
+
+import requests
 import logging
 
-def getStockData(symbol, timeSeriesFunction, apikey):
-    file_path = 'alphavantage.json'
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        
-        # Using the correct key based on your JSON structure
-        time_series_key = "Weekly Time Series"
-        
-        # Check if the key exists
-        if time_series_key not in data:
-            raise ValueError("Time Series data not found in local JSON file.")
-        
-        # Optionally, you can further filter the data by symbol if your JSON includes multiple symbols
-        # This example assumes the entire JSON is dedicated to one symbol and directly accesses the time series data
-        time_series_data = data[time_series_key]
-        
-        # Here you can implement additional processing if needed, for example, filtering by date range
-        
-        return time_series_data
-    except FileNotFoundError:
-        logging.error(f"File not found: {file_path}")
-        raise
-    except Exception as e:
-        logging.error(f"An error occurred while loading JSON data: {e}")
-        raise
+logging.basicConfig(level=logging.INFO)
+
+def getStockData(symbol, time_series_function, api_key):
+    base_url = "https://www.alphavantage.co/query"
+    params = {
+        'function': time_series_function,
+        'symbol': symbol,
+        'apikey': api_key
+    }
+    
+    response = requests.get(base_url, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        time_series_key = next((key for key in data if 'Time Series' in key), None)
+        if time_series_key:
+            return data['Meta Data'], data[time_series_key]
+        else:
+            logging.error("Time Series data not found.")
+            return None, None
+    else:
+        logging.error(f"Failed to fetch data: HTTP Status Code {response.status_code}")
+        return None, None
