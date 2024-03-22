@@ -59,7 +59,7 @@ def getStockSymbol():
             print("\nError: Invalid stock symbol. Please enter a valid symbol consisting of up to 5 uppercase alphabetic characters.")
         else:
             
-            apikey = "574R6DZXDBWETSKK"
+            apikey = "V6BVQP0SPVJAVA6X"
             url = f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={symbol}&apikey={apikey}"
 
             response = requests.get(url)

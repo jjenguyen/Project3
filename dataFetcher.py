@@ -1,28 +1,45 @@
-
 import requests
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
-def getStockData(symbol, time_series_function, api_key):
-    base_url = "https://www.alphavantage.co/query"
-    params = {
-        'function': time_series_function,
-        'symbol': symbol,
-        'apikey': api_key
-    }
-    
-    response = requests.get(base_url, params=params)
-    
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
-        time_series_key = next((key for key in data if 'Time Series' in key), None)
-        if time_series_key:
-            return data['Meta Data'], data[time_series_key]
-        else:
-            logging.error("Time Series data not found.")
-            return None, None
+def getStockData(symbol, timeSeriesFunction, apikey):
+    if "TIME_SERIES_INTRADAY" in timeSeriesFunction:
+        # symbol is already included from timeSeriesFunctions.py so we do not need it again here
+        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&apikey={apikey}"
     else:
-        logging.error(f"Failed to fetch data: HTTP Status Code {response.status_code}")
-        return None, None
+        # url format for all other time series functions
+        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}"
+
+    # temporary for error checking
+    logging.info(f"Fetching stock data for: {symbol} using function: {timeSeriesFunction}")
+    print("URL created:", url)
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+
+        # temporary for error checking
+        logging.error("API Response Content: %s", response.content)
+
+        # Check if the API response contains the expected data key
+        data_key = None
+        for key in data:
+            # temporary for error checking
+            print("Key in data:", key)
+            if "Time Series" in key:
+                data_key = key
+                break
+
+        if not data_key:
+            raise ValueError("Time Series data not found in API response.")
+
+        return data[data_key]
+    except requests.RequestException as e:
+        logging.error("HTTP Request error for %s: %s", symbol, e)
+        raise
+    except ValueError as e:
+        logging.error("Data Processing error for %s: %s", symbol, e)
+        raise
+    except Exception as e:
+        logging.error("An unexpected error occurred: %s", e)
+        raise

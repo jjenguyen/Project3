@@ -7,6 +7,14 @@ from timeSeriesFunctions import getTimeSeriesFunction  # Adjust if needed
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+def parseDate(date_string):
+    """Parse a string into a datetime object."""
+    try:
+        return datetime.strptime(date_string, '%Y-%m-%d')
+    except ValueError:
+        logging.error("Invalid date format. Please use YYYY-MM-DD.")
+        return None
+
 def preprocess_data(raw_data, start_date, end_date):
     filtered_data = {}
     for date_str, details in raw_data.items():
@@ -16,37 +24,50 @@ def preprocess_data(raw_data, start_date, end_date):
     return filtered_data
 
 def main():
-    apikey = "574R6DZXDBWETSKK"  # Use your actual API key here
+    apikey = "V6BVQP0SPVJAVA6X"
 
     print("Stock Data Visualizer")
+    print("---------------------")
 
+    # Loop until user chooses to exit
     while True:
+        # Get stock symbol
         symbol = getStockSymbol()
+
+        # Get chart type
         chartType = getChartType()
 
-        # If getTimeSeriesFunction requires 'symbol', ensure it's passed correctly
-        # Otherwise, adjust getTimeSeriesFunction not to require 'symbol' if not needed
+        # Get time series function
         timeSeriesFunction = getTimeSeriesFunction(symbol)
 
-        startDateStr = getStartDate()  # Fetch the start date string
-        endDateStr = getEndDate(startDateStr)  # Fetch the end date string, ensuring logic for comparison
+        # Get start date
+        # this is already built-into getStartDate()
+        # logging.info("Please enter the start date.")
+        startDate = getStartDate()  # Use getStartDate instead of getValidDate
+
+        # Get end date
+        endDate = getEndDate(startDate)
 
         # Fetch stock data from Alpha Vantage
-        metadata, raw_data = getStockData(symbol, timeSeriesFunction, apikey)
+        raw_data = getStockData(symbol, timeSeriesFunction, apikey)
         if not raw_data:
             logging.error(f"Failed to fetch data for symbol: {symbol}")
-            continue  # Allows user to retry instead of ending the script
+            return
 
-        # Preprocess the fetched data based on the user-specified date range
-        data = preprocess_data(raw_data, startDateStr, endDateStr)
+        # Preprocess the fetched data
+        formattedStartDate = startDate.strftime('%Y-%m-%d')
+        formattedEndDate = endDate.strftime('%Y-%m-%d')
+        data = preprocess_data(raw_data, symbol, timeSeriesFunction, apikey, formattedStartDate, formattedEndDate)
         if not data:
             logging.error("No data available for the selected date range.")
-            continue
+            return
 
-        # Generate and display the graph based on the preprocessed data
-        generate_graph(data, chartType, startDateStr, endDateStr)
+        # Generate and display the graph
+        generate_graph(data, chartType, formattedStartDate, formattedEndDate)
 
-        if input("\nWould you like to view more stock data? (y/n): ").lower() != 'y':
+        # Ask user to continue or exit
+        choice = input("\nWould you like to view more stock data? (y/n): ").strip().lower()
+        if choice != "y":
             break
 
 if __name__ == "__main__":
