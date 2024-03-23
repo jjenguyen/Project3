@@ -2,21 +2,12 @@ import pygal
 from pygal.style import Style
 import logging
 import platform
+import webbrowser
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def preprocess_data(api_response, start_date, end_date):
-    """Extract and reformat data from Alpha Vantage API response."""
-    time_series_key = next(key for key in api_response.keys() if "Time Series" in key)
-    raw_data = api_response[time_series_key]
-    
-    #filter data within the specified date range and reformat
-    data = {date: float(details['4. close']) for date, details in raw_data.items() if start_date <= date <= end_date}
-    
-    return data
-
-#Function get it to open directly in the browser
+# get user's default web browser command based on their platform
 def get_default_browser():
-    """Get the default browser command based on platform."""
     system = platform.system()
     if system == "Windows":
         return "start"
@@ -25,64 +16,43 @@ def get_default_browser():
     else:  # Linux, Unix, etc.
         return "xdg-open"
 
-def generateGraph(data, chartType, startDate, endDate):
-    #customizing the chart style
+def generate_graph(data, chart_type, start_date, end_date, symbol):
+    # chart styling
     custom_style = Style(
-        background='transparent',
-        plot_background='transparent',
-        foreground='#53E89B',
-        foreground_strong='#53A0E8',
-        foreground_subtle='#630C0D',
-        opacity='.6',
+        background='white',
+        plot_background='white',
+        foreground='black',
+        opacity='1',
         opacity_hover='.9',
         transition='400ms ease-in',
-        colors=('#E853A0', '#E8537A', '#E95355', '#E88553')
+        colors=('red', 'blue', 'green', 'orange')
     )
-    
-    #validate chart type
-    if chartType not in ['line', 'bar']:
-        logging.error(f"Invalid chart type selected: {chartType}")
-        return
+    chart = pygal.Line(style=custom_style, show_legend=True,
+                       title=f"Stock Data for {symbol}: {start_date} to {end_date}") if chart_type == 'line' \
+        else pygal.Bar(style=custom_style, show_legend=True,
+                       title=f"Stock Data for {symbol}: {start_date} to {end_date}")
 
-    try:
-        #initialize chart with custom style
-        chart = pygal.Line(style=custom_style, x_label_rotation=20, show_legend=True) if chartType == 'line' else pygal.Bar(style=custom_style, x_label_rotation=20, show_legend=True)
-        
-        #prepare data
-        dates = sorted(list(data.keys()))
-        # values = [data[date]['4. close'] for date in dates if date >= startDate and date <= endDate]
-        # ERROR - An unexpected error occurred while generating or displaying the chart: 'float' object is not subscriptable
-        # error fixed after modifying:
-        values = [data[date] for date in dates if date >= startDate and date <= endDate]
+    # to prevent x-axis values overlapping and improve readability
+    chart.x_label_rotation = -60
 
-        #check for empty data
-        if not dates or not values:
-            logging.error("No data available for the given date range.")
-            return
-        
-        #set chart data
-        chart.x_labels = dates
-        chart.add("Stock Price", values)
-        
-        #render chart to file and open it
-        svg_file_path = 'chart.svg'
-        chart.render_to_file(svg_file_path)
-        #webbrowser.open(svg_file_path)
-        #logging.info("Chart generated and displayed successfully.")
-         # Get the default browser command based on platform
-    
-        default_browser_cmd = get_default_browser()
-        # Open the SVG file with the default browser
-        command = f"{default_browser_cmd} {svg_file_path}"
-        
-        # Execute the command
-        import subprocess
-        subprocess.Popen(command, shell=True)
-        
-        logging.info("Chart generated and displayed successfully.")
+    # extract dates and data values for chart
+    dates = sorted(data.keys())
+    chart.x_labels = dates
+    opens = [data[date]["Open"] for date in dates]
+    highs = [data[date]["High"] for date in dates]
+    lows = [data[date]["Low"] for date in dates]
+    closes = [data[date]["Close"] for date in dates]
 
-        
-    except IOError as e:
-        logging.error(f"Failed to save the chart to {svg_file_path}: {e}")
-    except Exception as e:
-        logging.error(f"An unexpected error occurred while generating or displaying the chart: {e}")
+    # add chart data
+    chart.add('Open', opens)
+    chart.add('High', highs)
+    chart.add('Low', lows)
+    chart.add('Close', closes)
+
+    # render chart to SVG file
+    file_name = 'stock_chart.svg'
+    chart.render_to_file(file_name)
+
+    # display success message and auto open chart in user's default browser
+    logging.info("Chart generated and displayed successfully.")
+    webbrowser.open(file_name)
