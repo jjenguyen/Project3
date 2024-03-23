@@ -73,8 +73,7 @@ def main():
             logging.error(f"Failed to fetch data for symbol: {symbol}")
             return
 
-        # temporary for error checking
-        print("Raw data structure:", raw_data)
+      
 
         # preprocess the fetched data
         formattedStartDate = startDate.strftime('%Y-%m-%d')
