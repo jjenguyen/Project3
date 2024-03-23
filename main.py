@@ -7,22 +7,41 @@ from timeSeriesFunctions import getTimeSeriesFunction
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def preprocess_data(raw_data, start_date, end_date):
-    # convert date strings to datetime objects
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+from datetime import datetime
 
-    # filter data to fit desired date range
+def preprocess_data(raw_data, start_date, end_date):
+    # Initialize container for filtered data
     filtered_data = {}
+
+    # Define both date and datetime formats
+    date_format = '%Y-%m-%d'
+    datetime_format = '%Y-%m-%d %H:%M:%S'
+    
+    # Convert start and end dates to datetime objects for comparison
+    start_datetime = datetime.strptime(start_date, date_format)
+    end_datetime = datetime.strptime(end_date, date_format).replace(hour=23, minute=59, second=59)
+
+    # Iterate through the raw data items
     for date_str, details in raw_data.items():
-        date = datetime.strptime(date_str, '%Y-%m-%d')
-        if start_date <= date <= end_date:
+        # Check if the date string includes a time component
+        try:
+            # Attempt to parse as datetime
+            date = datetime.strptime(date_str, datetime_format)
+        except ValueError:
+            # Fallback to date-only parsing
+            date = datetime.strptime(date_str, date_format)
+        
+        # Check if the date falls within the specified range
+        if start_datetime <= date <= end_datetime:
+            # Adapt key lookup to your data structure as needed
             filtered_data[date_str] = {
-                "Open": details["Open"],
-                "High": details["High"],
-                "Low": details["Low"],
-                "Close": details["Close"]
+                "Open": details.get("Open") or details.get("1. open"),
+                "High": details.get("High") or details.get("2. high"),
+                "Low": details.get("Low") or details.get("3. low"),
+                "Close": details.get("Close") or details.get("4. close"),
+                "Volume": details.get("Volume") or details.get("5. volume", "N/A")
             }
+
     return filtered_data
 
 def main():

@@ -2,48 +2,34 @@ import requests
 import logging
 
 def getStockData(symbol, timeSeriesFunction, apikey, output_size="full"):
-    # Adjust the URL based on the timeSeriesFunction and include output_size
+    # Add outputsize parameter for both intraday and other series
+    base_url = "https://www.alphavantage.co/query"
     if "TIME_SERIES_INTRADAY" in timeSeriesFunction:
-        # For intraday, output_size is not applicable; remove or handle separately if intraday supports it differently
-        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}"
+        # For intraday, include interval from the function
+        url = f"{base_url}?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}&outputsize=full"
     else:
-        # Include output_size for daily, weekly, and monthly time series
-        url = f"https://www.alphavantage.co/query?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}&outputsize={output_size}"
+        # For daily, weekly, and monthly, no interval needed
+        url = f"{base_url}?function={timeSeriesFunction}&symbol={symbol}&apikey={apikey}&outputsize=full"
 
-    logging.info(f"Fetching stock data for: {symbol} using function: {timeSeriesFunction}, Output Size: {output_size}")
-    print("URL created:", url)
+    logging.info(f"Fetching stock data for: {symbol} using URL: {url}")
 
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raises HTTPError for bad responses
+        response.raise_for_status()  # Raises an HTTPError for bad responses
         data = response.json()
 
-        # Check for an error message in the response
-        if "Error Message" in data:
-            raise ValueError(data["Error Message"])
-
-        # Find the correct key for time series data
-        time_series_key = next((key for key in data.keys() if "Time Series" in key), None)
-        
+        # Look for the relevant time series data in the response
+        time_series_key = next((key for key in data if "Time Series" in key), None)
         if not time_series_key:
-            raise ValueError("Time Series data not found in API response.")
+            logging.error("Time Series data not found in API response.")
+            return None
 
-        # Extract and reformat the data
-        time_series_data = data[time_series_key]
-        processed_data = {}
-        for date, details in time_series_data.items():
-            processed_data[date] = {
-                'Open': float(details['1. open']),
-                'High': float(details['2. high']),
-                'Low': float(details['3. low']),
-                'Close': float(details['4. close']),
-                # Include 'Volume' if needed and available in the response
-            }
-        return processed_data
-
+        # Process and return the time series data
+        return {date: {metric: float(value) for metric, value in metrics.items()}
+                for date, metrics in data[time_series_key].items()}
     except requests.RequestException as e:
-        logging.error("HTTP Request error for %s: %s", symbol, e)
-    except ValueError as e:
-        logging.error("Data Processing error for %s: %s", symbol, e)
+        logging.error(f"HTTP request error: {e}")
     except Exception as e:
-        logging.error("An unexpected error occurred: %s", e)
+        logging.error(f"Error fetching stock data: {e}")
+
+    return None
