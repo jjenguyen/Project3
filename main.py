@@ -75,31 +75,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# # tested to see if api properly hooked up to app: successful
-# # import requests
-
-# def fetch_stock_data(url):
-#     try:
-# #         response = requests.get(url)
-#         if response.status_code == 200:
-#             data = response.json()
-#             return data
-#         else:
-#             print("Error:", response.status_code)
-#             return None
-#     except Exception as e:
-#         print("Error:", e)
-#         return None
-
-# def main():
-#     api_url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo"
-#     data = fetch_stock_data(api_url)
-#     if data:
-#         print("Data fetched successfully:")
-#         print(data)
-#     else:
-#         print("Failed to fetch data.")
-
-# if __name__ == "__main__":
-#     main()

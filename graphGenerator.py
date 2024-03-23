@@ -56,3 +56,4 @@ def generate_graph(data, chart_type, start_date, end_date, symbol):
     # display success message and auto open chart in user's default browser
     logging.info("Chart generated and displayed successfully.")
     webbrowser.open(file_name)
+
