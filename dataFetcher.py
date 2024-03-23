@@ -19,21 +19,25 @@ def getStockData(symbol, timeSeriesFunction, apikey):
         data = response.json()
 
         # temporary for error checking
-        logging.error("API Response Content: %s", response.content)
+        # logging.error("API Response Content: %s", response.content)
 
-        # Check if the API response contains the expected data key
-        data_key = None
-        for key in data:
-            # temporary for error checking
-            print("Key in data:", key)
-            if "Time Series" in key:
-                data_key = key
-                break
-
-        if not data_key:
+        time_series_key = next((key for key in data.keys() if "Time Series" in key), None)
+        
+        if not time_series_key:
             raise ValueError("Time Series data not found in API response.")
 
-        return data[data_key]
+        # extract and reformat the data
+        time_series_data = data[time_series_key]
+        processed_data = {}
+        for date, details in time_series_data.items():
+            processed_data[date] = {
+                'Open': float(details['1. open']),
+                'High': float(details['2. high']),
+                'Low': float(details['3. low']),
+                'Close': float(details['4. close'])
+            }
+        return processed_data
+
     except requests.RequestException as e:
         logging.error("HTTP Request error for %s: %s", symbol, e)
         raise
